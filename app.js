@@ -1,27 +1,23 @@
-require("dotenv").config();
-require("express-async-errors");
-
+require("dotenv").config()
 const express = require('express');
+const connect = require('./db/connect');
+
 const app = express();
 
-const mainRoute = require("./routes/main");
-const notFoundMiddleware = require("./middleware/errorHandler");
-const errorHandlerMiddleware = require("./middleware/errorHandler");
-
+//middleware
 app.use(express.json());
 
-app.use("/api/v1", mainRoute)
-app.use(notFoundMiddleware);
-app.use(errorHandlerMiddleware);
+app.use("/api/auth", require("./routes/auth"));
 
-const port = 5000 || process.env.PORT;
+const PORT = process.env.PORT || 5000
 
 const start = async () => {
     try {
-        app.listen(port, console.log(`server is running on port ${port}`))
+        await connect(process.env.MONGO_URI);
+        app.listen(PORT, () => console.log(`listening to port ${PORT}`));
     } catch (err) {
         console.log(err)
     }
 }
 
-start()
+start();
