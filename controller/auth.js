@@ -1,4 +1,5 @@
-const dbuser = require("../model/users")
+const dbuser = require("../model/users");
+const ErrorResponse = require("../utils/errorResponse");
 
 const register = async (req, res, next) => {
     const { username, email, password } = req.body;
@@ -14,10 +15,11 @@ const register = async (req, res, next) => {
             user
         })
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        })
+        // res.status(500).json({
+        //     success: false,
+        //     error: err.message
+        // })
+        next(err);
     }
 }
 
@@ -25,10 +27,11 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        res.status(400).json({
-            success: false,
-            error: "please provide email and password"
-        })
+        // res.status(400).json({
+        //     success: false,
+        //     error: "please provide email and password"
+        // })
+        return next(new ErrorResponse("please provide email and password", 400))
     }
 
     try {
@@ -36,19 +39,21 @@ const login = async (req, res, next) => {
         const user = await dbuser.findOne({ email }).select("password");
 
         if (!user) {
-            res.status(404).json({
-                success: false,
-                error: "user not found"
-            })
+            // res.status(404).json({
+            //     success: false,
+            //     error: "user not found"
+            // })
+            return next(new ErrorResponse("Invalid credential", 401));
         }
 
         const isMatch = await user.matchPasswords(password);
 
         if (!isMatch) {
-            res.status(404).json({
-                success: false,
-                error: "invallid credential"
-            })
+            // res.status(404).json({
+            //     success: false,
+            //     error: "invallid credential"
+            // })
+            return next(new ErrorResponse("Invalid credential", 401));
         }
 
         res.status(200).json({
@@ -57,10 +62,12 @@ const login = async (req, res, next) => {
         })
 
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        })
+        // res.status(500).json({
+        //     success: false,
+        //     error: error.message
+        // })
+
+        next(error);
     }
 }
 
