@@ -5,7 +5,7 @@ const { register, login, resetPassword, forgetPassword } = require("../controlle
 
 router.route("/register").post(register);
 router.route("/login").post(login);
-router.route("/forgetpassword").post(forgetPassword);
+router.route("/forgotpassword").post(forgetPassword);
 router.route("/resetpassword/:resetToken").put(resetPassword);
 
 module.exports = router;
