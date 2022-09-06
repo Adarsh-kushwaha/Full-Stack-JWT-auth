@@ -1,6 +1,7 @@
 const dbuser = require("../model/users");
 const ErrorResponse = require("../utils/errorResponse");
 const sendMail = require("../utils/sendMails");
+const crypto = require('crypto');
 
 const register = async (req, res, next) => {
     const { username, email, password } = req.body;
@@ -114,8 +115,33 @@ const forgetPassword = async (req, res, next) => {
     }
 }
 
-const resetPassword = (req, res, next) => {
-    res.send("resetPassword route")
+const resetPassword = async (req, res, next) => {
+    const resetPasswordToken = crypto.createHash("sha256").update(req.params.resetToken).digest("hex");
+
+    try {
+        const user = await dbuser.findOne({
+            resetPasswordToken,
+            esetPasswordExpire: { $gt: Date.now() }
+        })
+
+        if (!user) {
+            return next(new ErrorResponse("Invalid reset token", 400))
+        }
+
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        res.status(201).json({
+            success: true,
+            data: "password set succesfully"
+
+        })
+    } catch (error) {
+        next(error);
+    }
 }
 
 const sendToken = (user, statusCode, res) => {
