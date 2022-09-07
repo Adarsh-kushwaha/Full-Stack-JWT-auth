@@ -1,17 +1,37 @@
-import React from 'react'
-import { Navigate, Route } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import axios from "axios";
+import "./PrivateScreen.css";
 
+const PrivateRoute = () => {
+    const [error, setError] = useState("");
+    const [privateData, setPrivateData] = useState("");
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
-    return (
-        <Route  {...rest}
-            render={(props) =>
-                localStorage.getItem("authToken") ? (
-                    <Component {...props} />
-                ) : (
-                    <Navigate to="/login" replace />
-                )
-            } />
+    useEffect(() => {
+        const fetchPrivateData = async () => {
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`
+                }
+            }
+
+            try {
+                const { data } = await axios.get("/api/private", config);
+                console.log(data);
+                setPrivateData(data.data)
+            } catch (error) {
+                localStorage.removeItem("authToken");
+                setError("You are not authorized please login");
+            }
+        }
+
+        fetchPrivateData();
+    }, [])
+
+    return error ? (
+        <span className="error-message">{error}</span>
+    ) : (
+        <div>PrivateData - {privateData}</div>
     )
 }
 
