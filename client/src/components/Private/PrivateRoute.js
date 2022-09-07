@@ -31,7 +31,7 @@ const PrivateRoute = () => {
     return error ? (
         <span className="error-message">{error}</span>
     ) : (
-        <div>PrivateData - {privateData}</div>
+        <div className='privateMsg'>PrivateData - {privateData}</div>
     )
 }
 
